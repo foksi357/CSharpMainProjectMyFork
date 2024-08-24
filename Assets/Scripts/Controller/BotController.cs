@@ -7,6 +7,7 @@ using Model.Config;
 using UnityEngine;
 using Utilities;
 //HE IS POWER!!!!
+//giga niga power edition ultra super mega black
 namespace Controller
 {
     public class BotController
