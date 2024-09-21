@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Model.Runtime.Projectiles;
 using UnityEngine;
 
@@ -41,16 +42,33 @@ namespace UnitBrains.Player
 
         protected override List<Vector2Int> SelectTargets()
         {
-            ///////////////////////////////////////
-            // Homework 1.4 (1st block, 4rd module)
-            ///////////////////////////////////////
+
             List<Vector2Int> result = GetReachableTargets();
-            while (result.Count > 1)
+            if (result.Count > 1) { 
+            //Создаем переменную для присвоение ей значения
+            Vector2Int Target = result[0];
+            //Создаем переменную для вычесления минимального значения
+            float Mindistance = int.MaxValue;
+            //Перебираем список 
+            foreach (Vector2Int target1 in result)
             {
-                result.RemoveAt(result.Count - 1);
+                //С помощью метода узнаем расстояние противника до нашей базы и вычисляем
+                if (DistanceToOwnBase(target1) < Mindistance)
+                {
+                    //Возращаем в метод полученное значение
+                    Mindistance = DistanceToOwnBase(target1);
+                    //Возращаем значение в список
+                    Target = target1;
+                }
             }
+            //Очищаем список
+            result.Clear();
+            //Добавляем в список полученное значение
+            result.Add(Target);
+
+        } 
             return result;
-            ///////////////////////////////////////
+            
         }
 
         public override void Update(float deltaTime, float time)
