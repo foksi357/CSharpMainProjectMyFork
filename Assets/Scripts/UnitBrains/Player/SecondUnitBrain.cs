@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using Model;
 using Model.Runtime.Projectiles;
 using UnityEngine;
+using Utilities;
 
 namespace UnitBrains.Player
 {
@@ -13,6 +16,7 @@ namespace UnitBrains.Player
         private float _temperature = 0f;
         private float _cooldownTime = 0f;
         private bool _overheated;
+        private List<Vector2Int> ListTarget =new List<Vector2Int>();
         
         protected override void GenerateProjectiles(Vector2Int forTarget, List<BaseProjectile> intoList)
         {       
@@ -37,36 +41,50 @@ namespace UnitBrains.Player
 
         public override Vector2Int GetNextStep()
         {
-            return base.GetNextStep();
+            if (ListTarget.Count> 0)
+            {
+                return unit.Pos.CalcNextStepTowards(ListTarget[0]);
+            }
+            return unit.Pos;
         }
 
         protected override List<Vector2Int> SelectTargets()
         {
-
-            List<Vector2Int> result = GetReachableTargets();
-            if (result.Count > 1) { 
-            //Создаем переменную для присвоение ей значения
-            Vector2Int Target = result[0];
-            //Создаем переменную для вычесления минимального значения
+            List<Vector2Int> result = GetAllTargets().ToList();
+            List<Vector2Int> NextStepList = new List<Vector2Int>();
+            float MinDistances = float.MaxValue;
+            if (result.Count > 0) 
+            { 
+           
+            
             float Mindistance = int.MaxValue;
-            //Перебираем список 
-            foreach (Vector2Int target1 in result)
-            {
-                //С помощью метода узнаем расстояние противника до нашей базы и вычисляем
-                if (DistanceToOwnBase(target1) < Mindistance)
+                Vector2Int MinDistancesObject = result[0];
+                foreach (Vector2Int target in result)
                 {
-                    //Возращаем в метод полученное значение
-                    Mindistance = DistanceToOwnBase(target1);
-                    //Возращаем значение в список
-                    Target = target1;
-                }
+                    float TmpDistansToBase = DistanceToOwnBase(target);
+                    if (TmpDistansToBase< Mindistance)
+                {
+                        MinDistances = TmpDistansToBase;
+                        MinDistancesObject = target;
+
+                    }
             }
             //Очищаем список
             result.Clear();
-            //Добавляем в список полученное значение
-            result.Add(Target);
+        ListTarget.Clear();
+                if (IsTargetInRange(MinDistancesObject))
+                    result.Add(MinDistancesObject);
+                else
+                    ListTarget.Add(MinDistancesObject);
 
-        } 
+            }
+            else
+            {
+                ListTarget.Clear();
+                Vector2Int enemyBase = runtimeModel.RoMap.Bases[IsPlayerUnitBrain ? RuntimeModel.PlayerId : RuntimeModel.BotPlayerId];
+                ListTarget.Add(enemyBase);
+
+            } 
             return result;
             
         }
